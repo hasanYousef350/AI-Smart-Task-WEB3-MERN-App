@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Accept Invitation</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+  <div class="container mt-5">
+    <h3 class="mb-3">Accept Your Invitation</h3>
+    <form id="acceptForm">
+      <div class="mb-3">
+        <label for="fullName" class="form-label">Your Name</label>
+        <input type="text" class="form-control" id="fullName" required>
+      </div>
+      <div class="mb-3">
+        <label for="password" class="form-label">Create Password</label>
+        <input type="password" class="form-control" id="password" required>
+      </div>
+      <button type="submit" class="btn btn-primary">Accept Invitation</button>
+    </form>
+    <div id="statusMsg" class="mt-3"></div>
+  </div>
+
+  <script>
+    const token = window.location.pathname.split('/').pop();
+
+    document.getElementById('acceptForm').addEventListener('submit', async function (e) {
+      e.preventDefault();
+
+      const name = document.getElementById('fullName').value;
+      const password = document.getElementById('password').value;
+
+      const res = await fetch('/api/accept-invite', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, password, token })
+      });
+
+      const data = await res.json();
+      const statusMsg = document.getElementById('statusMsg');
+
+      if (data.success) {
+        statusMsg.innerHTML = '<div class="alert alert-success">You\'re now registered. You can log in!</div>';
+      } else {
+        statusMsg.innerHTML = `<div class="alert alert-danger">${data.message}</div>`;
+      }
+    });
+  </script>
+</body>
+</html>

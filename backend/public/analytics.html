@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>AI Smart Task Chain - Analytics</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    :root {
+      --primary: #4361ee;
+      --secondary: #3f37c9;
+      --sidebar: #2B216A;
+      --accent: #4895ef;
+      --light: #f8f9fc;
+      --dark: #212529;
+      --gray: #6c757d;
+      --success: #28a745;
+      --warning: #ffc107;
+      --danger: #dc3545;
+      --info: #17a2b8;
+    }
+    
+    body {
+      font-family: 'Poppins', sans-serif;
+      background-color: #f5f9ff;
+      margin: 0;
+      padding: 0;
+    }
+    
+    .sidebar {
+      width: 250px;
+      background-color: var(--sidebar);
+      color: white;
+      position: fixed;
+      height: 100vh;
+      padding-top: 20px;
+      transition: all 0.3s ease;
+      z-index: 1000;
+      box-shadow: 4px 0 15px rgba(0,0,0,0.1);
+    }
+    
+    .sidebar.hidden {
+      transform: translateX(-250px);
+    }
+    
+    .sidebar .user-info {
+      text-align: center;
+      margin-bottom: 2rem;
+      padding: 0 20px 20px;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+    
+    .sidebar .user-info i {
+      font-size: 2.5rem;
+      color: rgba(255,255,255,0.9);
+      margin-bottom: 0.8rem;
+    }
+    
+    .sidebar .user-info h5 {
+      font-weight: 500;
+      color: white;
+    }
+    
+    .sidebar a {
+      color: rgba(255,255,255,0.8);
+      display: block;
+      padding: 12px 20px;
+      text-decoration: none;
+      transition: all 0.3s ease;
+      margin: 5px 10px;
+      border-radius: 5px;
+      font-weight: 400;
+    }
+    
+    .sidebar a:hover {
+      color: white;
+      background: rgba(255,255,255,0.1);
+      transform: translateX(5px);
+    }
+    
+    .sidebar a.active {
+      color: white;
+      background: rgba(255,255,255,0.2);
+      font-weight: 500;
+    }
+    
+    .sidebar a i {
+      width: 25px;
+      text-align: center;
+    }
+    
+    .main-content {
+      margin-left: 250px;
+      padding: 20px;
+      transition: all 0.3s ease;
+    }
+    
+    .main-content.full {
+      margin-left: 0;
+    }
+    
+    .navbar {
+      background-color: white;
+      box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
+      padding: 15px 25px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .card {
+      border: none;
+      border-radius: 10px;
+      box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.1);
+      transition: all 0.3s ease;
+      height: 100%;
+      background-color: white;
+    }
+    
+    .card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 0.5rem 1.5rem 0 rgba(58, 59, 69, 0.2);
+    }
+    
+    .card-body {
+      padding: 1.5rem;
+    }
+    
+    .card-title {
+      color: var(--dark);
+      font-weight: 600;
+      margin-bottom: 1.2rem;
+      position: relative;
+      padding-bottom: 10px;
+      font-size: 1.1rem;
+    }
+    
+    .card-title::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 40px;
+      height: 3px;
+      background: var(--primary);
+      border-radius: 3px;
+    }
+    
+    .btn-toggle {
+      background-color: var(--primary);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      padding: 8px 15px;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 40px;
+      height: 40px;
+    }
+    
+    .btn-toggle:hover {
+      background-color: var(--secondary);
+      transform: scale(1.05);
+    }
+    
+    .btn-toggle i {
+      font-size: 1.2rem;
+    }
+    
+    .notification-bell {
+      position: relative;
+      cursor: pointer;
+    }
+    
+    .notification-bell .badge {
+      position: absolute;
+      top: -5px;
+      right: -5px;
+      background-color: var(--danger);
+      color: white;
+      border-radius: 50%;
+      padding: 2px 6px;
+      font-size: 0.75rem;
+      font-weight: 500;
+    }
+    
+    .dropdown-menu {
+      max-height: 300px;
+      overflow-y: auto;
+      border: none;
+      box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+      border-radius: 8px;
+      padding: 0;
+      margin-top: 10px;
+    }
+    
+    .dropdown-item {
+      padding: 12px 15px;
+      border-bottom: 1px solid rgba(0,0,0,0.05);
+      transition: all 0.2s;
+    }
+    
+    .dropdown-item:hover {
+      background-color: rgba(67, 97, 238, 0.1);
+    }
+    
+    .chart-container {
+      background-color: white;
+      border-radius: 10px;
+      padding: 20px;
+      box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.1);
+      margin-bottom: 20px;
+      height: 100%;
+    }
+    
+    .chart-title {
+      font-weight: 600;
+      margin-bottom: 15px;
+      color: var(--dark);
+    }
+    
+    @media (max-width: 768px) {
+      .sidebar {
+        transform: translateX(-250px);
+      }
+      .sidebar.active {
+        transform: translateX(0);
+      }
+      .main-content {
+        margin-left: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Sidebar -->
+  <div class="sidebar" id="sidebar">
+    <div class="user-info">
+      <i class="fas fa-user-circle"></i>
+      <h5>Admin_User</h5>
+    </div>
+    <a href="overview.html"><i class="fas fa-home me-2"></i> Overview</a>
+    <a href="tasks.html"><i class="fas fa-tasks me-2"></i> Tasks</a>
+    <a href="calendar.html"><i class="fas fa-calendar-alt me-2"></i> Calendar</a>
+    <a href="team.html"><i class="fas fa-users me-2"></i> Team</a>
+    <a href="files.html"><i class="fas fa-file-alt me-2"></i> Files</a>
+    <a href="users.html"><i class="fas fa-user-cog me-2"></i> Users</a>
+    <a href="analytics.html" class="active"><i class="fas fa-chart-line me-2"></i> Analytics</a>
+    <a href="login.html"><i class="fas fa-sign-out-alt me-2"></i> Logout</a>
+  </div>
+
+  <!-- Main Content -->
+  <div class="main-content" id="mainContent">
+    <nav class="navbar">
+      <div>
+        <button class="btn btn-toggle" id="toggleSidebar">
+          <i class="fas fa-bars"></i>
+        </button>
+        <h4 class="mb-0 ms-3">Analytics Dashboard</h4>
+      </div>
+      <div class="notification-bell">
+        <a href="#" class="text-dark" data-bs-toggle="dropdown">
+          <i class="fas fa-bell"></i>
+          <span class="badge" id="notificationCount">0</span>
+        </a>
+        <ul class="dropdown-menu dropdown-menu-end" id="notificationList"></ul>
+      </div>
+    </nav>
+
+    <div class="container mt-4">
+      <div class="row g-4" id="analyticsReports"></div>
+
+      <div class="row mt-4 g-4">
+        <div class="col-md-6">
+          <div class="chart-container">
+            <h5 class="chart-title">Tasks by Status</h5>
+            <canvas id="statusChart"></canvas>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="chart-container">
+            <h5 class="chart-title">Tasks by Priority</h5>
+            <canvas id="priorityChart"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    // Sidebar Toggle
+    const sidebar = document.getElementById('sidebar');
+    const mainContent = document.getElementById('mainContent');
+    document.getElementById('toggleSidebar').addEventListener('click', () => {
+      sidebar.classList.toggle('hidden');
+      sidebar.classList.toggle('active');
+      mainContent.classList.toggle('full');
+    });
+
+    // Notifications
+    function populateNotifications() {
+      const notifications = [
+        { message: 'New analytics report generated: Task Delays' },
+        { message: 'Team member reassignment suggested' },
+        { message: 'Weekly performance report ready' }
+      ];
+      const notificationList = document.getElementById('notificationList');
+      const notificationCount = document.getElementById('notificationCount');
+
+      notificationList.innerHTML = '';
+      notifications.forEach(n => {
+        const li = document.createElement('li');
+        li.className = 'dropdown-item';
+        li.innerHTML = `<i class="fas fa-circle text-primary me-2" style="font-size: 8px;"></i>${n.message}`;
+        notificationList.appendChild(li);
+      });
+
+      notificationCount.textContent = notifications.length;
+    }
+
+    // Analytics Text Reports
+    async function populateAnalytics() {
+      const reportsContainer = document.getElementById('analyticsReports');
+      reportsContainer.innerHTML = '';
+      try {
+        // Simulated API response
+        const reports = [
+          { 
+            title: 'Productivity Overview', 
+            content: 'Team productivity increased by 15% compared to last week' 
+          },
+          { 
+            title: 'Task Completion Rate', 
+            content: '87% of tasks completed on time this week' 
+          },
+          { 
+            title: 'Top Performers', 
+            content: 'John, Sarah, and Mike completed the most tasks this week' 
+          },
+          { 
+            title: 'Bottleneck Analysis', 
+            content: 'Review stage has the longest average completion time (3.2 days)' 
+          }
+        ];
+        
+        reports.forEach(report => {
+          const col = document.createElement('div');
+          col.className = 'col-md-6 col-lg-3';
+          col.innerHTML = `
+            <div class="card">
+              <div class="card-body">
+                <h5 class="card-title">${report.title}</h5>
+                <p class="card-text">${report.content}</p>
+              </div>
+            </div>`;
+          reportsContainer.appendChild(col);
+        });
+      } catch (err) {
+        console.error('Error loading analytics:', err);
+      }
+    }
+
+    // Chart Analytics
+    async function loadAnalyticsCharts() {
+      try {
+        // Simulated API response
+        const statusCounts = {
+          'Completed': 42,
+          'In Progress': 28,
+          'Not Started': 15
+        };
+        
+        const priorityCounts = {
+          'High': 25,
+          'Medium': 40,
+          'Low': 20
+        };
+
+        new Chart(document.getElementById('statusChart'), {
+          type: 'bar',
+          data: {
+            labels: Object.keys(statusCounts),
+            datasets: [{
+              label: 'Tasks by Status',
+              data: Object.values(statusCounts),
+              backgroundColor: [
+                'rgba(40, 167, 69, 0.7)',
+                'rgba(23, 162, 184, 0.7)',
+                'rgba(255, 193, 7, 0.7)'
+              ],
+              borderColor: [
+                'rgba(40, 167, 69, 1)',
+                'rgba(23, 162, 184, 1)',
+                'rgba(255, 193, 7, 1)'
+              ],
+              borderWidth: 1
+            }]
+          },
+          options: {
+            responsive: true,
+            plugins: {
+              legend: { display: false },
+              tooltip: {
+                backgroundColor: 'rgba(0,0,0,0.8)',
+                titleFont: { family: 'Poppins', size: 14 },
+                bodyFont: { family: 'Poppins', size: 12 }
+              }
+            },
+            scales: {
+              y: {
+                beginAtZero: true,
+                ticks: { font: { family: 'Poppins' } }
+              },
+              x: {
+                ticks: { font: { family: 'Poppins' } }
+              }
+            }
+          }
+        });
+
+        new Chart(document.getElementById('priorityChart'), {
+          type: 'doughnut',
+          data: {
+            labels: Object.keys(priorityCounts),
+            datasets: [{
+              data: Object.values(priorityCounts),
+              backgroundColor: [
+                'rgba(220, 53, 69, 0.7)',
+                'rgba(253, 126, 20, 0.7)',
+                'rgba(108, 117, 125, 0.7)'
+              ],
+              borderColor: [
+                'rgba(220, 53, 69, 1)',
+                'rgba(253, 126, 20, 1)',
+                'rgba(108, 117, 125, 1)'
+              ],
+              borderWidth: 1
+            }]
+          },
+          options: {
+            responsive: true,
+            plugins: {
+              legend: {
+                position: 'right',
+                labels: { font: { family: 'Poppins' } }
+              },
+              tooltip: {
+                backgroundColor: 'rgba(0,0,0,0.8)',
+                titleFont: { family: 'Poppins', size: 14 },
+                bodyFont: { family: 'Poppins', size: 12 }
+              }
+            },
+            cutout: '70%'
+          }
+        });
+      } catch (err) {
+        console.error('Error loading charts:', err);
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      populateAnalytics();
+      populateNotifications();
+      loadAnalyticsCharts();
+    });
+  </script>
+</body>
+</html>

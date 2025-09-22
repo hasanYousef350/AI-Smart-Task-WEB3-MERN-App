@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>AI Smart Task Chain - Files</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f4f4f9;
+    }
+    .sidebar {
+      width: 250px;
+      background-color: #2B216A;
+      color: white;
+      position: fixed;
+      height: 100vh;
+      padding-top: 20px;
+      transition: transform 0.3s ease;
+    }
+    .sidebar.hidden {
+      transform: translateX(-250px);
+    }
+    .sidebar .user-info {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+    .sidebar .user-info i {
+      font-size: 2rem;
+      margin-bottom: 0.5rem;
+    }
+    .sidebar a {
+      color: white;
+      display: block;
+      padding: 10px 20px;
+      text-decoration: none;
+      transition: background 0.3s;
+    }
+    .sidebar a:hover {
+      background-color: #3A2E8A;
+    }
+    .main-content {
+      margin-left: 250px;
+      padding: 20px;
+      transition: margin-left 0.3s ease;
+    }
+    .main-content.full {
+      margin-left: 0;
+    }
+    .navbar {
+      background-color: white;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      padding: 10px 20px;
+    }
+    .table th, .table td {
+      vertical-align: middle;
+    }
+    .btn-sm {
+      padding: 0.25rem 0.5rem;
+    }
+    @media (max-width: 768px) {
+      .sidebar {
+        transform: translateX(-250px);
+      }
+      .sidebar.active {
+        transform: translateX(0);
+      }
+      .main-content {
+        margin-left: 0;
+      }
+      .main-content.full {
+        margin-left: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Sidebar -->
+  <div class="sidebar" id="sidebar">
+    <div class="user-info">
+      <i class="fas fa-user-circle"></i>
+      <h5>Admin_User</h5>
+    </div>
+    <a href="overview.html"><i class="fas fa-home me-2"></i> Overview</a>
+    <a href="tasks.html"><i class="fas fa-tasks me-2"></i> Tasks</a>
+    <a href="calendar.html"><i class="fas fa-calendar-alt me-2"></i> Calendar</a>
+    <a href="team.html"><i class="fas fa-users me-2"></i> Team</a>
+    <a href="files.html"><i class="fas fa-file-alt me-2"></i> Files</a>
+    <a href="users.html"><i class="fas fa-user-cog me-2"></i> Users</a>
+    <a href="analytics.html"><i class="fas fa-chart-line me-2"></i> Analytics</a>
+    <a href="login.html"><i class="fas fa-sign-out-alt me-2"></i> Logout</a>
+  </div>
+
+  <!-- Main Content -->
+  <div class="main-content" id="mainContent">
+    <nav class="navbar d-flex justify-content-between align-items-center">
+      <button class="btn btn-light" id="toggleSidebar"><i class="fas fa-bars"></i></button>
+      <h4 class="mb-0">Files</h4>
+    </nav>
+    <div class="container mt-4">
+      <input type="file" id="fileInput" class="form-control mb-3" multiple />
+      <table class="table table-bordered">
+        <thead>
+          <tr>
+            <th>File Name</th>
+            <th>Size</th>
+            <th>Uploader</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="fileList">
+          <!-- Files will be populated dynamically -->
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+  const API_BASE = 'http://localhost:3000'; // Backend URL
+
+  const sidebar = document.getElementById('sidebar');
+  const mainContent = document.getElementById('mainContent');
+  document.getElementById('toggleSidebar').addEventListener('click', () => {
+    sidebar.classList.toggle('hidden');
+    sidebar.classList.toggle('active');
+    mainContent.classList.toggle('full');
+  });
+
+  function formatBytes(bytes) {
+    const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+    if (bytes === 0) return '0 Byte';
+    const i = parseInt(Math.floor(Math.log(bytes) / Math.log(1024)), 10);
+    return `${(bytes / Math.pow(1024, i)).toFixed(2)} ${sizes[i]}`;
+  }
+
+  // Fetch and display files
+  async function fetchFiles() {
+    const res = await fetch(`${API_BASE}/files`);
+    const files = await res.json();
+    const fileList = document.getElementById('fileList');
+    fileList.innerHTML = '';
+    files.forEach(file => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${file.name}</td>
+        <td>${formatBytes(file.size)}</td>
+        <td>${file.uploader}</td>
+        <td>
+          <a class="btn btn-primary btn-sm" href="${API_BASE}/${file.path}" download>Download</a>
+          <button class="btn btn-danger btn-sm ms-1" onclick="deleteFile('${file._id}')">Delete</button>
+        </td>
+      `;
+      fileList.appendChild(tr);
+    });
+  }
+
+  // Delete file
+  async function deleteFile(id) {
+    const confirmed = confirm("Are you sure you want to delete this file?");
+    if (!confirmed) return;
+
+    const res = await fetch(`${API_BASE}/files/${id}`, { method: 'DELETE' });
+    const data = await res.json();
+    if (data.success) {
+      alert("File deleted successfully.");
+      fetchFiles();
+    } else {
+      alert("Failed to delete file.");
+    }
+  }
+
+  // Upload files
+  document.getElementById('fileInput').addEventListener('change', async function () {
+    const formData = new FormData();
+    const files = Array.from(this.files);
+    files.forEach(file => formData.append('files', file));
+    formData.append('uploader', 'Admin_User');
+
+    const res = await fetch(`${API_BASE}/upload`, {
+      method: 'POST',
+      body: formData
+    });
+
+    const data = await res.json();
+    if (data.success) {
+      alert("File(s) uploaded successfully.");
+      fetchFiles();
+    } else {
+      alert("Upload failed.");
+    }
+
+    this.value = '';
+  });
+
+  document.addEventListener('DOMContentLoaded', fetchFiles);
+</script>
+
+</body>
+</html>

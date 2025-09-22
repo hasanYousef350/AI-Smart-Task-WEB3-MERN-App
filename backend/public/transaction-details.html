@@ -1,0 +1,1274 @@
+<!-- <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Transaction Dashboard</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+  <style>
+    :root {
+      --primary: #4e73df;
+      --secondary: #1cc88a;
+      --dark: #5a5c69;
+      --light: #f8f9fc;
+      --sidebar: #2B216A;
+      --accent: #f6c23e;
+      --info: #36b9cc;
+    }
+    
+    body {
+      font-family: 'Poppins', sans-serif;
+      background-color: #f5f7ff;
+      color: #333;
+      overflow-x: hidden;
+    }
+    
+    .sidebar {
+      width: 250px;
+      background-color: var(--sidebar);
+      color: white;
+      position: fixed;
+      height: 100vh;
+      padding-top: 20px;
+      transition: all 0.3s;
+      z-index: 1000;
+      box-shadow: 4px 0 10px rgba(0,0,0,0.1);
+    }
+    
+    .sidebar a {
+      color: rgba(255,255,255,0.8);
+      padding: 12px 20px;
+      margin: 5px 0;
+      text-decoration: none;
+      display: block;
+      border-radius: 5px;
+      transition: all 0.3s;
+      font-weight: 400;
+    }
+    
+    .sidebar a:hover {
+      color: white;
+      background: rgba(255,255,255,0.1);
+      transform: translateX(5px);
+    }
+    
+    .sidebar a.active {
+      color: white;
+      background: rgba(255,255,255,0.2);
+      font-weight: 500;
+    }
+    
+    .sidebar a i {
+      width: 25px;
+      text-align: center;
+    }
+    
+    .user-info {
+      padding: 0 20px 20px;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+    
+    .user-info i {
+      color: rgba(255,255,255,0.7);
+    }
+    
+    .user-info h5 {
+      font-weight: 500;
+      margin-top: 10px;
+    }
+    
+    .main-content {
+      margin-left: 250px;
+      padding: 20px;
+      transition: all 0.3s;
+    }
+    
+    .navbar {
+      background-color: white;
+      box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
+      padding: 15px 20px;
+      border-radius: 10px;
+    }
+    
+    .container {
+      background-color: white;
+      border-radius: 15px;
+      box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.1);
+      padding: 25px;
+      margin-top: 20px;
+    }
+    
+    .tx-hash {
+      font-family: 'Roboto Mono', monospace;
+      color: var(--primary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 200px;
+      display: inline-block;
+      font-size: 0.85rem;
+    }
+    
+    .badge-block {
+      background-color: var(--primary);
+      color: white;
+      font-weight: 500;
+      padding: 5px 10px;
+      border-radius: 20px;
+    }
+    
+    .table-responsive {
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    
+    .table {
+      margin-bottom: 0;
+    }
+    
+    .table thead th {
+      background-color: var(--primary);
+      color: white;
+      border: none;
+      font-weight: 500;
+      padding: 15px 20px;
+    }
+    
+    .table tbody td {
+      padding: 15px 20px;
+      vertical-align: middle;
+    }
+    
+    .table-hover tbody tr:hover {
+      background-color: rgba(78, 115, 223, 0.05);
+    }
+    
+    .btn-primary {
+      background-color: var(--primary);
+      border-color: var(--primary);
+      padding: 8px 20px;
+      border-radius: 8px;
+      font-weight: 500;
+    }
+    
+    .btn-primary:hover {
+      background-color: #3a5bd9;
+      border-color: #3a5bd9;
+    }
+    
+    .btn-success {
+      background-color: var(--secondary);
+      border-color: var(--secondary);
+      padding: 8px 20px;
+      border-radius: 8px;
+      font-weight: 500;
+    }
+    
+    .btn-success:hover {
+      background-color: #17a673;
+      border-color: #17a673;
+    }
+    
+    .btn-outline-primary {
+      color: var(--primary);
+      border-color: var(--primary);
+      padding: 5px 15px;
+      border-radius: 6px;
+      font-weight: 400;
+    }
+    
+    .btn-outline-primary:hover {
+      background-color: var(--primary);
+      border-color: var(--primary);
+    }
+    
+    .refresh-btn {
+      transition: all 0.3s;
+    }
+    
+    .refresh-btn:hover {
+      transform: rotate(30deg);
+    }
+    
+    .badge {
+      font-weight: 500;
+      padding: 6px 10px;
+      font-size: 0.75rem;
+    }
+    
+    .bg-success {
+      background-color: var(--secondary) !important;
+    }
+    
+    .bg-info {
+      background-color: var(--info) !important;
+    }
+    
+    h3, h4, h5 {
+      font-weight: 600;
+    }
+    
+    .spinner-border {
+      width: 2rem;
+      height: 2rem;
+    }
+    
+    @media (max-width: 768px) {
+      .sidebar {
+        margin-left: -250px;
+      }
+      .sidebar.active {
+        margin-left: 0;
+      }
+      .main-content {
+        margin-left: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="sidebar" id="sidebar">
+    <div class="user-info text-center mb-4">
+      <i class="fas fa-user-circle fa-3x mb-2"></i>
+      <h5>Admin_User</h5>
+    </div>
+    <a href="overview.html"><i class="fas fa-home me-2"></i> Overview</a>
+    <a href="tasks.html"><i class="fas fa-tasks me-2"></i> Tasks</a>
+    <a href="calendar.html"><i class="fas fa-calendar-alt me-2"></i> Calendar</a>
+    <a href="team.html"><i class="fas fa-users me-2"></i> Team</a>
+    <a href="files.html"><i class="fas fa-file-alt me-2"></i> Files</a>
+    <a href="users.html"><i class="fas fa-user-cog me-2"></i> Users</a>
+    <a href="analytics.html" class="active"><i class="fas fa-chart-line me-2"></i> Analytics</a>
+    <a href="login.html"><i class="fas fa-sign-out-alt me-2"></i> Logout</a>
+  </div>
+
+  <div class="main-content" id="mainContent">
+    <nav class="navbar mb-4">
+      <div>
+        <h4 class="mb-0"><i class="fas fa-list-alt me-2"></i> Transaction Dashboard</h4>
+      </div>
+      <div>
+        <button class="btn btn-primary" onclick="window.location.href='tasks.html'">
+          <i class="fas fa-arrow-left me-2"></i> Back to Tasks
+        </button>
+      </div>
+    </nav>
+
+    <div class="container">
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+          <h3 class="mb-0">All Task Transactions</h3>
+          <p class="text-muted mb-0">View all on-chain and off-chain transactions</p>
+        </div>
+        <button class="btn btn-success refresh-btn" onclick="loadTxLogs()">
+          <i class="fas fa-sync-alt me-2"></i> Refresh
+        </button>
+      </div>
+      
+      <div class="table-responsive">
+        <table class="table table-hover">
+          <thead>
+            <tr>
+              <th>Task Title</th>
+              <th>Status</th>
+              <th>Tx Hash</th>
+              <th>Block #</th>
+              <th>Timestamp</th>
+              <th>Details</th>
+            </tr>
+          </thead>
+          <tbody id="txDetailsBody">
+            <tr>
+              <td colspan="6" class="text-center py-5">
+                <div class="spinner-border text-primary" role="status">
+                  <span class="visually-hidden">Loading...</span>
+                </div>
+                <p class="mt-3 mb-0 text-muted">Loading transaction data...</p>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    console.log("Ethers loaded:", ethers);
+    const provider = new ethers.providers.JsonRpcProvider("http://localhost:8545");
+    const contractAddress = "0x5FbDB2315678afecb367f032d93F642f64180aa3";
+    const abi = [
+      {
+        "anonymous": false,
+        "inputs": [
+          {
+            "indexed": true,
+            "internalType": "uint256",
+            "name": "taskId",
+            "type": "uint256"
+          },
+          {
+            "indexed": false,
+            "internalType": "string",
+            "name": "title",
+            "type": "string"
+          },
+          {
+            "indexed": false,
+            "internalType": "address",
+            "name": "assignee",
+            "type": "address"
+          },
+          {
+            "indexed": false,
+            "internalType": "uint256",
+            "name": "dueDate",
+            "type": "uint256"
+          }
+        ],
+        "name": "TaskCreated",
+        "type": "event"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "string",
+            "name": "title",
+            "type": "string"
+          },
+          {
+            "internalType": "address",
+            "name": "assignee",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "dueDate",
+            "type": "uint256"
+          }
+        ],
+        "name": "createTask",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "uint256",
+            "name": "taskId",
+            "type": "uint256"
+          }
+        ],
+        "name": "getTask",
+        "outputs": [
+          {
+            "internalType": "string",
+            "name": "",
+            "type": "string"
+          },
+          {
+            "internalType": "address",
+            "name": "",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "",
+            "type": "uint256"
+          }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "uint256",
+            "name": "",
+            "type": "uint256"
+          }
+        ],
+        "name": "tasks",
+        "outputs": [
+          {
+            "internalType": "string",
+            "name": "title",
+            "type": "string"
+          },
+          {
+            "internalType": "address",
+            "name": "assignee",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "dueDate",
+            "type": "uint256"
+          }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+      }
+    ]
+
+    async function loadTxLogs() {
+      const tbody = document.getElementById("txDetailsBody");
+      const refreshBtn = document.querySelector('.refresh-btn');
+      
+      // Show loading state
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="6" class="text-center py-5">
+            <div class="spinner-border text-primary" role="status">
+              <span class="visually-hidden">Loading...</span>
+            </div>
+            <p class="mt-3 mb-0 text-muted">Loading transaction data...</p>
+          </td>
+        </tr>
+      `;
+      
+      // Add spinning animation to refresh button
+      refreshBtn.innerHTML = '<i class="fas fa-sync-alt fa-spin me-2"></i> Refreshing';
+      refreshBtn.disabled = true;
+
+      try {
+        // First fetch from local database
+        const dbResponse = await fetch('http://localhost:3000/tasks');
+        const dbTasks = await dbResponse.json();
+        
+        // Then fetch from blockchain
+        const contract = new ethers.Contract(contractAddress, abi, provider);
+        const events = await contract.queryFilter("TaskCreated", 0, "latest");
+
+        // Combine both data sources
+        tbody.innerHTML = '';
+        
+        if (events.length === 0 && dbTasks.length === 0) {
+          tbody.innerHTML = `
+            <tr>
+              <td colspan="6" class="text-center py-5">
+                <i class="fas fa-inbox fa-2x text-muted mb-3"></i>
+                <h5 class="mb-2">No transactions found</h5>
+                <p class="text-muted">Create a task to see transaction records</p>
+              </td>
+            </tr>
+          `;
+          return;
+        }
+
+        // Process blockchain events
+        for (const event of events) {
+          const txHash = event.transactionHash;
+          const blockNumber = event.blockNumber;
+          const title = event.args.title;
+          const block = await provider.getBlock(blockNumber);
+          const timestamp = new Date(block.timestamp * 1000).toLocaleString();
+
+          const row = document.createElement("tr");
+          row.innerHTML = `
+            <td class="align-middle">${title}</td>
+            <td class="align-middle"><span class="badge bg-success">On-chain</span></td>
+            <td class="align-middle"><span class="tx-hash" title="${txHash}">${txHash}</span></td>
+            <td class="align-middle"><span class="badge badge-block">${blockNumber}</span></td>
+            <td class="align-middle">${timestamp}</td>
+            <td class="align-middle">
+              <button class="btn btn-sm btn-outline-primary" onclick="viewTxDetails('${txHash}')">
+                <i class="fas fa-search me-1"></i> Details
+              </button>
+            </td>
+          `;
+          tbody.appendChild(row);
+        }
+
+        // Process database tasks
+        for (const task of dbTasks) {
+          if (!task.txHash) continue;
+          
+          const row = document.createElement("tr");
+          row.innerHTML = `
+            <td class="align-middle">${task.title}</td>
+            <td class="align-middle"><span class="badge bg-info">Off-chain</span></td>
+            <td class="align-middle"><span class="tx-hash" title="${task.txHash || 'N/A'}">${task.txHash || 'N/A'}</span></td>
+            <td class="align-middle"><span class="badge badge-block">${task.blockNumber || 'N/A'}</span></td>
+            <td class="align-middle">${task.blockTimestamp ? new Date(task.blockTimestamp).toLocaleString() : 'N/A'}</td>
+            <td class="align-middle">
+              ${task.txHash ? 
+                `<button class="btn btn-sm btn-outline-primary" onclick="viewTxDetails('${task.txHash}')">
+                  <i class="fas fa-search me-1"></i> Details
+                </button>` : 
+                'N/A'}
+            </td>
+          `;
+          tbody.appendChild(row);
+        }
+
+      } catch (err) {
+        console.error("Error loading transactions:", err);
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="6" class="text-center py-5 text-danger">
+              <i class="fas fa-exclamation-triangle fa-2x mb-3"></i>
+              <h5 class="mb-2">Failed to load transactions</h5>
+              <p class="text-muted mb-0">${err.message}</p>
+            </td>
+          </tr>
+        `;
+      } finally {
+        // Reset refresh button
+        refreshBtn.innerHTML = '<i class="fas fa-sync-alt me-2"></i> Refresh';
+        refreshBtn.disabled = false;
+      }
+    }
+
+    function viewTxDetails(txHash) {
+      alert(`Viewing details for transaction: ${txHash}\nThis would open a detailed view in a real application.`);
+    }
+
+    window.onload = loadTxLogs;
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html> -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Transaction Dashboard</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+  <style>
+    :root {
+      --primary: #4e73df;
+      --secondary: #1cc88a;
+      --dark: #5a5c69;
+      --light: #f8f9fc;
+      --sidebar: #2B216A;
+      --accent: #f6c23e;
+      --info: #36b9cc;
+      --warning: #f6c23e;
+    }
+    
+    body {
+      font-family: 'Poppins', sans-serif;
+      background-color: #f5f7ff;
+      color: #333;
+      overflow-x: hidden;
+    }
+    
+    .sidebar {
+      width: 250px;
+      background-color: var(--sidebar);
+      color: white;
+      position: fixed;
+      height: 100vh;
+      padding-top: 20px;
+      transition: all 0.3s;
+      z-index: 1000;
+      box-shadow: 4px 0 10px rgba(0,0,0,0.1);
+    }
+    
+    .sidebar a {
+      color: rgba(255,255,255,0.8);
+      padding: 12px 20px;
+      margin: 5px 0;
+      text-decoration: none;
+      display: block;
+      border-radius: 5px;
+      transition: all 0.3s;
+      font-weight: 400;
+    }
+    
+    .sidebar a:hover {
+      color: white;
+      background: rgba(255,255,255,0.1);
+      transform: translateX(5px);
+    }
+    
+    .sidebar a.active {
+      color: white;
+      background: rgba(255,255,255,0.2);
+      font-weight: 500;
+    }
+    
+    .sidebar a i {
+      width: 25px;
+      text-align: center;
+    }
+    
+    .user-info {
+      padding: 0 20px 20px;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+    
+    .user-info i {
+      color: rgba(255,255,255,0.7);
+    }
+    
+    .user-info h5 {
+      font-weight: 500;
+      margin-top: 10px;
+    }
+    
+    .main-content {
+      margin-left: 250px;
+      padding: 20px;
+      transition: all 0.3s;
+    }
+    
+    .navbar {
+      background-color: white;
+      box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
+      padding: 15px 20px;
+      border-radius: 10px;
+    }
+    
+    .container {
+      background-color: white;
+      border-radius: 15px;
+      box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.1);
+      padding: 25px;
+      margin-top: 20px;
+    }
+    
+    .tx-hash {
+      font-family: 'Roboto Mono', monospace;
+      color: var(--primary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 200px;
+      display: inline-block;
+      font-size: 0.85rem;
+    }
+    
+    .badge-block {
+      background-color: var(--primary);
+      color: white;
+      font-weight: 500;
+      padding: 5px 10px;
+      border-radius: 20px;
+    }
+    
+    .table-responsive {
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    
+    .table {
+      margin-bottom: 0;
+    }
+    
+    .table thead th {
+      background-color: var(--primary);
+      color: white;
+      border: none;
+      font-weight: 500;
+      padding: 15px 20px;
+    }
+    
+    .table tbody td {
+      padding: 15px 20px;
+      vertical-align: middle;
+    }
+    
+    .table-hover tbody tr:hover {
+      background-color: rgba(78, 115, 223, 0.05);
+    }
+    
+    .btn-primary {
+      background-color: var(--primary);
+      border-color: var(--primary);
+      padding: 8px 20px;
+      border-radius: 8px;
+      font-weight: 500;
+    }
+    
+    .btn-primary:hover {
+      background-color: #3a5bd9;
+      border-color: #3a5bd9;
+    }
+    
+    .btn-success {
+      background-color: var(--secondary);
+      border-color: var(--secondary);
+      padding: 8px 20px;
+      border-radius: 8px;
+      font-weight: 500;
+    }
+    
+    .btn-success:hover {
+      background-color: #17a673;
+      border-color: #17a673;
+    }
+    
+    .btn-outline-primary {
+      color: var(--primary);
+      border-color: var(--primary);
+      padding: 5px 15px;
+      border-radius: 6px;
+      font-weight: 400;
+    }
+    
+    .btn-outline-primary:hover {
+      background-color: var(--primary);
+      border-color: var(--primary);
+    }
+    
+    .refresh-btn {
+      transition: all 0.3s;
+    }
+    
+    .refresh-btn:hover {
+      transform: rotate(30deg);
+    }
+    
+    .badge {
+      font-weight: 500;
+      padding: 6px 10px;
+      font-size: 0.75rem;
+    }
+    
+    .bg-success {
+      background-color: var(--secondary) !important;
+    }
+    
+    .bg-info {
+      background-color: var(--info) !important;
+    }
+    
+    .bg-warning {
+      background-color: var(--warning) !important;
+    }
+    
+    h3, h4, h5 {
+      font-weight: 600;
+    }
+    
+    .spinner-border {
+      width: 2rem;
+      height: 2rem;
+    }
+    
+    @media (max-width: 768px) {
+      .sidebar {
+        margin-left: -250px;
+      }
+      .sidebar.active {
+        margin-left: 0;
+      }
+      .main-content {
+        margin-left: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="sidebar" id="sidebar">
+    <div class="user-info text-center mb-4">
+      <i class="fas fa-user-circle fa-3x mb-2"></i>
+      <h5>Admin_User</h5>
+    </div>
+    <a href="overview.html"><i class="fas fa-home me-2"></i> Overview</a>
+    <a href="tasks.html"><i class="fas fa-tasks me-2"></i> Tasks</a>
+    <a href="calendar.html"><i class="fas fa-calendar-alt me-2"></i> Calendar</a>
+    <a href="team.html"><i class="fas fa-users me-2"></i> Team</a>
+    <a href="files.html"><i class="fas fa-file-alt me-2"></i> Files</a>
+    <a href="users.html"><i class="fas fa-user-cog me-2"></i> Users</a>
+    <a href="analytics.html" class="active"><i class="fas fa-chart-line me-2"></i> Analytics</a>
+    <a href="login.html"><i class="fas fa-sign-out-alt me-2"></i> Logout</a>
+  </div>
+
+  <div class="main-content" id="mainContent">
+    <nav class="navbar mb-4">
+      <div>
+        <h4 class="mb-0"><i class="fas fa-list-alt me-2"></i> Transaction Dashboard</h4>
+      </div>
+      <div>
+        <button class="btn btn-primary" onclick="window.location.href='tasks.html'">
+          <i class="fas fa-arrow-left me-2"></i> Back to Tasks
+        </button>
+      </div>
+    </nav>
+
+    <div class="container">
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+          <h3 class="mb-0">All Task Transactions</h3>
+          <p class="text-muted mb-0">View all on-chain and off-chain transactions including updates</p>
+        </div>
+        <button class="btn btn-success refresh-btn" onclick="loadTxLogs()">
+          <i class="fas fa-sync-alt me-2"></i> Refresh
+        </button>
+      </div>
+      
+      <div class="table-responsive">
+        <table class="table table-hover">
+          <thead>
+            <tr>
+              <th>Task Title</th>
+              <th>Action</th>
+              <th>Status</th>
+              <th>Tx Hash</th>
+              <th>Block #</th>
+              <th>Timestamp</th>
+              <th>Details</th>
+            </tr>
+          </thead>
+          <tbody id="txDetailsBody">
+            <tr>
+              <td colspan="7" class="text-center py-5">
+                <div class="spinner-border text-primary" role="status">
+                  <span class="visually-hidden">Loading...</span>
+                </div>
+                <p class="mt-3 mb-0 text-muted">Loading transaction data...</p>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    console.log("Ethers loaded:", ethers);
+    const provider = new ethers.providers.JsonRpcProvider("http://localhost:8545");
+    const contractAddress = "0x5FbDB2315678afecb367f032d93F642f64180aa3";
+    const abi = [
+      {
+        "anonymous": false,
+        "inputs": [
+          {
+            "indexed": true,
+            "internalType": "uint256",
+            "name": "taskId",
+            "type": "uint256"
+          },
+          {
+            "indexed": false,
+            "internalType": "string",
+            "name": "title",
+            "type": "string"
+          },
+          {
+            "indexed": false,
+            "internalType": "address",
+            "name": "assignee",
+            "type": "address"
+          },
+          {
+            "indexed": false,
+            "internalType": "uint256",
+            "name": "dueDate",
+            "type": "uint256"
+          }
+        ],
+        "name": "TaskCreated",
+        "type": "event"
+      },
+      {
+        "anonymous": false,
+        "inputs": [
+          {
+            "indexed": true,
+            "internalType": "uint256",
+            "name": "taskId",
+            "type": "uint256"
+          },
+          {
+            "indexed": false,
+            "internalType": "string",
+            "name": "newTitle",
+            "type": "string"
+          },
+          {
+            "indexed": false,
+            "internalType": "address",
+            "name": "newAssignee",
+            "type": "address"
+          },
+          {
+            "indexed": false,
+            "internalType": "uint256",
+            "name": "newDueDate",
+            "type": "uint256"
+          }
+        ],
+        "name": "TaskUpdated",
+        "type": "event"
+      },
+      {
+        "anonymous": false,
+        "inputs": [
+          {
+            "indexed": true,
+            "internalType": "uint256",
+            "name": "taskId",
+            "type": "uint256"
+          },
+          {
+            "indexed": false,
+            "internalType": "bool",
+            "name": "completed",
+            "type": "bool"
+          }
+        ],
+        "name": "TaskStatusChanged",
+        "type": "event"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "string",
+            "name": "title",
+            "type": "string"
+          },
+          {
+            "internalType": "address",
+            "name": "assignee",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "dueDate",
+            "type": "uint256"
+          }
+        ],
+        "name": "createTask",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "uint256",
+            "name": "taskId",
+            "type": "uint256"
+          },
+          {
+            "internalType": "string",
+            "name": "newTitle",
+            "type": "string"
+          },
+          {
+            "internalType": "address",
+            "name": "newAssignee",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "newDueDate",
+            "type": "uint256"
+          }
+        ],
+        "name": "updateTask",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "uint256",
+            "name": "taskId",
+            "type": "uint256"
+          },
+          {
+            "internalType": "bool",
+            "name": "completed",
+            "type": "bool"
+          }
+        ],
+        "name": "setTaskStatus",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "uint256",
+            "name": "taskId",
+            "type": "uint256"
+          }
+        ],
+        "name": "getTask",
+        "outputs": [
+          {
+            "internalType": "string",
+            "name": "",
+            "type": "string"
+          },
+          {
+            "internalType": "address",
+            "name": "",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "",
+            "type": "uint256"
+          },
+          {
+            "internalType": "bool",
+            "name": "",
+            "type": "bool"
+          }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "uint256",
+            "name": "",
+            "type": "uint256"
+          }
+        ],
+        "name": "tasks",
+        "outputs": [
+          {
+            "internalType": "string",
+            "name": "title",
+            "type": "string"
+          },
+          {
+            "internalType": "address",
+            "name": "assignee",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "dueDate",
+            "type": "uint256"
+          },
+          {
+            "internalType": "bool",
+            "name": "completed",
+            "type": "bool"
+          }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+      }
+    ]
+
+    async function loadTxLogs() {
+      const tbody = document.getElementById("txDetailsBody");
+      const refreshBtn = document.querySelector('.refresh-btn');
+      
+      // Show loading state
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="7" class="text-center py-5">
+            <div class="spinner-border text-primary" role="status">
+              <span class="visually-hidden">Loading...</span>
+            </div>
+            <p class="mt-3 mb-0 text-muted">Loading transaction data...</p>
+          </td>
+        </tr>
+      `;
+      
+      // Add spinning animation to refresh button
+      refreshBtn.innerHTML = '<i class="fas fa-sync-alt fa-spin me-2"></i> Refreshing';
+      refreshBtn.disabled = true;
+
+      try {
+        // First fetch from local database
+        const dbResponse = await fetch('http://localhost:3000/tasks');
+        const dbTasks = await dbResponse.json();
+        
+        // Then fetch from blockchain
+        const contract = new ethers.Contract(contractAddress, abi, provider);
+        
+        // Get all task-related events
+        const creationEvents = await contract.queryFilter("TaskCreated", 0, "latest");
+        const updateEvents = await contract.queryFilter("TaskUpdated", 0, "latest");
+        const statusEvents = await contract.queryFilter("TaskStatusChanged", 0, "latest");
+
+        // Combine all events and sort by block number
+        const allEvents = [...creationEvents, ...updateEvents, ...statusEvents]
+          .sort((a, b) => b.blockNumber - a.blockNumber);
+
+        // Combine both data sources
+        tbody.innerHTML = '';
+        
+        if (allEvents.length === 0 && dbTasks.length === 0) {
+          tbody.innerHTML = `
+            <tr>
+              <td colspan="7" class="text-center py-5">
+                <i class="fas fa-inbox fa-2x text-muted mb-3"></i>
+                <h5 class="mb-2">No transactions found</h5>
+                <p class="text-muted">Create a task to see transaction records</p>
+              </td>
+            </tr>
+          `;
+          return;
+        }
+
+        // Process blockchain events
+        for (const event of allEvents) {
+          const txHash = event.transactionHash;
+          const blockNumber = event.blockNumber;
+          const block = await provider.getBlock(blockNumber);
+          const timestamp = new Date(block.timestamp * 1000).toLocaleString();
+          
+          let title = "";
+          let action = "";
+          let statusBadge = '<span class="badge bg-success">On-chain</span>';
+          
+          if (event.event === "TaskCreated") {
+            title = event.args.title;
+            action = '<span class="badge bg-info">Created</span>';
+          } 
+          else if (event.event === "TaskUpdated") {
+            // Try to get the original title from the contract
+            try {
+              const task = await contract.getTask(event.args.taskId);
+              title = task[0]; // title is the first element in the tuple
+            } catch {
+              title = "Task #" + event.args.taskId.toString();
+            }
+            action = '<span class="badge bg-warning">Updated</span>';
+          }
+          else if (event.event === "TaskStatusChanged") {
+            // Try to get the original title from the contract
+            try {
+              const task = await contract.getTask(event.args.taskId);
+              title = task[0]; // title is the first element in the tuple
+            } catch {
+              title = "Task #" + event.args.taskId.toString();
+            }
+            action = event.args.completed 
+              ? '<span class="badge bg-success">Completed</span>'
+              : '<span class="badge bg-secondary">Reopened</span>';
+          }
+
+          const row = document.createElement("tr");
+          row.innerHTML = `
+            <td class="align-middle">${title}</td>
+            <td class="align-middle">${action}</td>
+            <td class="align-middle">${statusBadge}</td>
+            <td class="align-middle"><span class="tx-hash" title="${txHash}">${txHash}</span></td>
+            <td class="align-middle"><span class="badge badge-block">${blockNumber}</span></td>
+            <td class="align-middle">${timestamp}</td>
+            <td class="align-middle">
+              <button class="btn btn-sm btn-outline-primary" onclick="viewTxDetails('${txHash}')">
+                <i class="fas fa-search me-1"></i> Details
+              </button>
+            </td>
+          `;
+          tbody.appendChild(row);
+        }
+
+        // Process database tasks
+        for (const task of dbTasks) {
+          if (!task.txHash && !task.updateTxHash) continue;
+          
+          // Show creation record if exists
+          if (task.txHash) {
+            const row = document.createElement("tr");
+            row.innerHTML = `
+              <td class="align-middle">${task.title}</td>
+              <td class="align-middle"><span class="badge bg-info">Created</span></td>
+              <td class="align-middle"><span class="badge bg-info">Off-chain</span></td>
+              <td class="align-middle"><span class="tx-hash" title="${task.txHash || 'N/A'}">${task.txHash || 'N/A'}</span></td>
+              <td class="align-middle"><span class="badge badge-block">${task.blockNumber || 'N/A'}</span></td>
+              <td class="align-middle">${task.createdAt ? new Date(task.createdAt).toLocaleString() : 'N/A'}</td>
+              <td class="align-middle">
+                ${task.txHash ? 
+                  `<button class="btn btn-sm btn-outline-primary" onclick="viewTxDetails('${task.txHash}')">
+                    <i class="fas fa-search me-1"></i> Details
+                  </button>` : 
+                  'N/A'}
+              </td>
+            `;
+            tbody.appendChild(row);
+          }
+          
+          // Show update records if exists
+          if (task.updates && task.updates.length > 0) {
+            for (const update of task.updates) {
+              const updateRow = document.createElement("tr");
+              updateRow.innerHTML = `
+                <td class="align-middle">${task.title}</td>
+                <td class="align-middle"><span class="badge bg-warning">Updated</span></td>
+                <td class="align-middle"><span class="badge bg-info">Off-chain</span></td>
+                <td class="align-middle"><span class="tx-hash" title="${update.txHash || 'N/A'}">${update.txHash || 'N/A'}</span></td>
+                <td class="align-middle"><span class="badge badge-block">${update.blockNumber || 'N/A'}</span></td>
+                <td class="align-middle">${update.updatedAt ? new Date(update.updatedAt).toLocaleString() : 'N/A'}</td>
+                <td class="align-middle">
+                  ${update.txHash ? 
+                    `<button class="btn btn-sm btn-outline-primary" onclick="viewTxDetails('${update.txHash}')">
+                      <i class="fas fa-search me-1"></i> Details
+                    </button>` : 
+                    'N/A'}
+                </td>
+              `;
+              tbody.appendChild(updateRow);
+            }
+          }
+          
+          // Show status changes if exists
+          if (task.statusChanges && task.statusChanges.length > 0) {
+            for (const statusChange of task.statusChanges) {
+              const statusRow = document.createElement("tr");
+              statusRow.innerHTML = `
+                <td class="align-middle">${task.title}</td>
+                <td class="align-middle">
+                  ${statusChange.completed 
+                    ? '<span class="badge bg-success">Completed</span>'
+                    : '<span class="badge bg-secondary">Reopened</span>'}
+                </td>
+                <td class="align-middle"><span class="badge bg-info">Off-chain</span></td>
+                <td class="align-middle"><span class="tx-hash" title="${statusChange.txHash || 'N/A'}">${statusChange.txHash || 'N/A'}</span></td>
+                <td class="align-middle"><span class="badge badge-block">${statusChange.blockNumber || 'N/A'}</span></td>
+                <td class="align-middle">${statusChange.changedAt ? new Date(statusChange.changedAt).toLocaleString() : 'N/A'}</td>
+                <td class="align-middle">
+                  ${statusChange.txHash ? 
+                    `<button class="btn btn-sm btn-outline-primary" onclick="viewTxDetails('${statusChange.txHash}')">
+                      <i class="fas fa-search me-1"></i> Details
+                    </button>` : 
+                    'N/A'}
+                </td>
+              `;
+              tbody.appendChild(statusRow);
+            }
+          }
+        }
+
+      } catch (err) {
+        console.error("Error loading transactions:", err);
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="7" class="text-center py-5 text-danger">
+              <i class="fas fa-exclamation-triangle fa-2x mb-3"></i>
+              <h5 class="mb-2">Failed to load transactions</h5>
+              <p class="text-muted mb-0">${err.message}</p>
+            </td>
+          </tr>
+        `;
+      } finally {
+        // Reset refresh button
+        refreshBtn.innerHTML = '<i class="fas fa-sync-alt me-2"></i> Refresh';
+        refreshBtn.disabled = false;
+      }
+    }
+
+    function viewTxDetails(txHash) {
+      alert(`Viewing details for transaction: ${txHash}\nThis would open a detailed view in a real application.`);
+    }
+
+    window.onload = loadTxLogs;
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

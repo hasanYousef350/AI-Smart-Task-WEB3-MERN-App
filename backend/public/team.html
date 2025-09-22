@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>AI Smart Task Chain - Team</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f9;
+      margin: 0;
+      padding: 0;
+    }
+    .sidebar {
+      width: 250px;
+      background-color: #2B216A;
+      color: white;
+      position: fixed;
+      height: 100vh;
+      padding-top: 20px;
+      transition: transform 0.3s ease;
+    }
+    .sidebar.hidden {
+      transform: translateX(-250px);
+    }
+    .sidebar .user-info {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+    .sidebar .user-info i {
+      font-size: 2rem;
+      margin-bottom: 0.5rem;
+    }
+    .sidebar a {
+      color: white;
+      display: block;
+      padding: 10px 20px;
+      text-decoration: none;
+      transition: background 0.3s;
+    }
+    .sidebar a:hover {
+      background-color: #3A2E8A;
+    }
+    .main-content {
+      margin-left: 250px;
+      padding: 20px;
+      transition: margin-left 0.3s ease;
+    }
+    .main-content.full {
+      margin-left: 0;
+    }
+    .navbar {
+      background-color: white;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      padding: 10px 20px;
+    }
+    .card {
+      border-radius: 10px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+    }
+    .member-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .member-actions {
+      display: flex;
+      gap: 10px;
+    }
+    @media (max-width: 768px) {
+      .sidebar {
+        transform: translateX(-250px);
+      }
+      .sidebar.active {
+        transform: translateX(0);
+      }
+      .main-content {
+        margin-left: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Sidebar -->
+  <div class="sidebar" id="sidebar">
+    <div class="user-info">
+      <i class="fas fa-user-circle"></i>
+      <h5>Admin_User</h5>
+    </div>
+    <a href="overview.html"><i class="fas fa-home me-2"></i> Overview</a>
+    <a href="tasks.html"><i class="fas fa-tasks me-2"></i> Tasks</a>
+    <a href="calendar.html"><i class="fas fa-calendar-alt me-2"></i> Calendar</a>
+    <a href="team.html"><i class="fas fa-users me-2"></i> Team</a>
+    <a href="files.html"><i class="fas fa-file-alt me-2"></i> Files</a>
+    <a href="users.html"><i class="fas fa-user-cog me-2"></i> Users</a>
+    <a href="analytics.html"><i class="fas fa-chart-line me-2"></i> Analytics</a>
+    <a href="login.html"><i class="fas fa-sign-out-alt me-2"></i> Logout</a>
+  </div>
+
+  <!-- Main Content -->
+  <div class="main-content" id="mainContent">
+    <nav class="navbar">
+      <button class="btn btn-light" id="toggleSidebar"><i class="fas fa-bars"></i></button>
+      <h4 class="mb-0">Team Members</h4>
+    </nav>
+
+    <div class="container mt-4">
+      <div class="card p-4">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h5 class="card-title mb-0">Manage Team</h5>
+          <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#inviteModal">
+            <i class="fas fa-user-plus me-2"></i>Invite Member
+          </button>
+        </div>
+        <ul id="teamMembers" class="list-group"></ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- Invite Modal -->
+  <div class="modal fade" id="inviteModal" tabindex="-1" aria-labelledby="inviteModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="inviteModalLabel">Invite Member</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <form id="inviteForm">
+            <div class="mb-3">
+              <label for="userName" class="form-label">Name</label>
+              <input type="text" class="form-control" id="userName" placeholder="John Doe" required>
+            </div>
+            <div class="mb-3">
+              <label for="emails" class="form-label">Email</label>
+              <input type="text" class="form-control" id="emails" placeholder="example@email.com" required>
+            </div>
+            <div class="mb-3">
+              <label for="role" class="form-label">Role</label>
+              <select class="form-select" id="role">
+                <option value="Member">Member</option>
+                <option value="Admin">Admin</option>
+                <option value="Viewer">Viewer</option>
+              </select>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="button" class="btn btn-primary" id="sendInvitesBtn">
+            <span class="spinner-border spinner-border-sm d-none" id="inviteSpinner" role="status" aria-hidden="true"></span>
+            Send Invite
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    const sidebar = document.getElementById('sidebar');
+    const mainContent = document.getElementById('mainContent');
+    document.getElementById('toggleSidebar').addEventListener('click', () => {
+      sidebar.classList.toggle('hidden');
+      sidebar.classList.toggle('active');
+      mainContent.classList.toggle('full');
+    });
+
+    const API_BASE = '';
+
+    async function populateTeamMembers() {
+      const teamMembersList = document.getElementById('teamMembers');
+      teamMembersList.innerHTML = `
+        <li class="list-group-item text-center">
+          <div class="spinner-border text-primary" role="status"></div>
+        </li>
+      `;
+
+      try {
+        const response = await fetch(`${API_BASE}/api/team-members`);
+        const members = await response.json();
+
+        teamMembersList.innerHTML = '';
+
+        members.forEach(member => {
+          const li = document.createElement('li');
+          li.className = 'list-group-item member-item';
+          li.innerHTML = `
+            <div>
+              <strong>${member.name || 'Unnamed'}</strong><br>
+              <small>${member.email}</small>
+              <select class="form-select form-select-sm mt-1" onchange="updateRole('${member._id}', this.value)">
+                <option value="Admin" ${member.role === 'Admin' ? 'selected' : ''}>Admin</option>
+                <option value="Member" ${member.role === 'Member' ? 'selected' : ''}>Member</option>
+                <option value="Viewer" ${member.role === 'Viewer' ? 'selected' : ''}>Viewer</option>
+              </select>
+            </div>
+            <div class="member-actions">
+              <button class="btn btn-sm btn-outline-danger" onclick="deleteMember('${member._id}')">
+                <i class="fas fa-trash"></i>
+              </button>
+            </div>
+          `;
+          teamMembersList.appendChild(li);
+        });
+      } catch (err) {
+        teamMembersList.innerHTML = `
+          <li class="list-group-item text-danger">Error loading team members</li>
+        `;
+      }
+    }
+
+    async function updateRole(memberId, newRole) {
+      try {
+        await fetch(`${API_BASE}/api/team-members/${memberId}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ role: newRole })
+        });
+      } catch (err) {
+        alert('Failed to update role');
+      }
+    }
+
+    async function deleteMember(memberId) {
+      if (!confirm('Are you sure you want to remove this member?')) return;
+      try {
+        await fetch(`${API_BASE}/api/team-members/${memberId}`, {
+          method: 'DELETE'
+        });
+        populateTeamMembers();
+      } catch (err) {
+        alert('Error removing member');
+      }
+    }
+
+    document.getElementById('sendInvitesBtn').addEventListener('click', async function () {
+      const name = document.getElementById('userName').value.trim();
+      const emails = document.getElementById('emails').value.trim().split(',').map(e => e.trim());
+      const role = document.getElementById('role').value;
+
+      if (!name || emails.length === 0) return alert('Please provide name and email');
+
+      const btn = this;
+      const spinner = document.getElementById('inviteSpinner');
+      btn.disabled = true;
+      spinner.classList.remove('d-none');
+
+      try {
+        const res = await fetch('/api/send-invites', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, emails, role })
+        });
+
+        const data = await res.json();
+        if (data.success) {
+          alert('Invitations sent');
+          bootstrap.Modal.getInstance(document.getElementById('inviteModal')).hide();
+          document.getElementById('inviteForm').reset();
+          populateTeamMembers();
+        } else {
+          alert('Some invitations failed.');
+        }
+      } catch (error) {
+        alert('Failed to send invites');
+      } finally {
+        btn.disabled = false;
+        spinner.classList.add('d-none');
+      }
+    });
+
+    document.addEventListener('DOMContentLoaded', populateTeamMembers);
+  </script>
+</body>
+</html>

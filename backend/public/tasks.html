@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>AI Smart Task Chain - Tasks</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+  <style>
+      
+    .sidebar { width: 250px; background-color: #2B216A; color: white; position: fixed; height: 100vh; padding-top: 20px; transition: transform 0.3s ease; }
+    .sidebar.hidden { transform: translateX(-250px); }
+    .sidebar .user-info { text-align: center; margin-bottom: 2rem; }
+    .sidebar .user-info i { font-size: 2rem; margin-bottom: 0.5rem; }
+    .sidebar a { color: white; display: block; padding: 10px 20px; text-decoration: none; transition: background 0.3s; }
+    .sidebar a:hover { background-color: #3A2E8A; }
+    .main-content { margin-left: 250px; padding: 20px; transition: margin-left 0.3s ease; }
+    .main-content.full { margin-left: 0; }
+    .navbar { background-color: white; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; }
+    .table th, .table td { vertical-align: middle; }
+    .btn-sm { padding: 0.25rem 0.5rem; }
+    .notification-bell { position: relative; }
+    .notification-bell .badge { position: absolute; top: -5px; right: -5px; background-color: red; color: white; border-radius: 50%; padding: 2px 6px; font-size: 0.75rem; }
+    .dropdown-menu { max-height: 300px; overflow-y: auto; }
+    .action-buttons { white-space: nowrap; }
+    .status-badge {
+      padding: 5px 10px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: 600;
+    }
+    .status-todo { background-color: #ffc107; color: #000; }
+    .status-inprogress { background-color: #17a2b8; color: #fff; }
+    .status-completed { background-color: #28a745; color: #fff; }
+    .priority-badge {
+      padding: 5px 10px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: 600;
+    }
+    .priority-low { background-color: #6c757d; color: #fff; }
+    .priority-medium { background-color: #fd7e14; color: #fff; }
+    .priority-high { background-color: #dc3545; color: #fff; }
+    @media (max-width: 768px) {
+      .sidebar { transform: translateX(-250px); }
+      .sidebar.active { transform: translateX(0); }
+      .main-content { margin-left: 0; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="sidebar" id="sidebar">
+    <div class="user-info">
+      <i class="fas fa-user-circle"></i>
+      <h5>Admin_User</h5>
+    </div>
+    <a href="overview.html"><i class="fas fa-home me-2"></i> Overview</a>
+    <a href="tasks.html"><i class="fas fa-tasks me-2"></i> Tasks</a>
+    <a href="calendar.html"><i class="fas fa-calendar-alt me-2"></i> Calendar</a>
+    <a href="team.html"><i class="fas fa-users me-2"></i> Team</a>
+    <a href="files.html"><i class="fas fa-file-alt me-2"></i> Files</a>
+    <a href="users.html"><i class="fas fa-user-cog me-2"></i> Users</a>
+    <a href="analytics.html"><i class="fas fa-chart-line me-2"></i> Analytics</a>
+    <a href="login.html"><i class="fas fa-sign-out-alt me-2"></i> Logout</a>
+  </div>
+
+  <div class="main-content" id="mainContent">
+    <nav class="navbar">
+      <div>
+        <button class="btn btn-light" id="toggleSidebar"><i class="fas fa-bars"></i></button>
+        <h4 class="mb-0 d-inline-block ms-2">Tasks</h4>
+      </div>
+      <div class="notification-bell">
+        <a href="#" class="text-dark" data-bs-toggle="dropdown">
+          <i class="fas fa-bell"></i>
+          <span class="badge" id="notificationCount">0</span>
+        </a>
+        <ul class="dropdown-menu dropdown-menu-end" id="notificationList"></ul>
+      </div>
+    </nav>
+
+    <div class="container mt-4">
+      <button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#createTaskModal">
+        <i class="fas fa-plus me-2"></i> Create New Task
+      </button>
+      <!-- In tasks.html, modify the View All Transaction Logs button -->
+<button class="btn btn-info mb-3" onclick="window.location.href='transaction-details.html'">
+  <i class="fas fa-list-alt me-2"></i> View All Transaction Logs
+</button>
+
+      <table class="table table-bordered">
+        <thead>
+          <tr>
+            <th>Title</th>
+            <th>Project</th>
+            <th>Status</th>
+            <th>Assignee</th>
+            <th>Due Date</th>
+            <th>Priority</th>
+            <!-- <th>Block #</th>
+            <th>Tx Hash</th>
+            <th>Timestamp</th> -->
+            <th class="action-buttons">Actions</th>
+          </tr>
+        </thead>
+        
+        <tbody id="taskList"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Create Task Modal -->
+  <div class="modal fade" id="createTaskModal" tabindex="-1" aria-labelledby="createTaskModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <form id="createTaskForm" class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Create New Task</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label for="taskTitle" class="form-label">Task Title</label>
+            <input type="text" class="form-control" id="taskTitle" required />
+          </div>
+          <div class="mb-3">
+            <label for="taskProject" class="form-label">Project</label>
+            <input type="text" class="form-control" id="taskProject" required />
+          </div>
+          <div class="mb-3">
+            <label for="taskStatus" class="form-label">Status</label>
+            <select class="form-select" id="taskStatus" required>
+              <option value="To Do">To Do</option>
+              <option value="In Progress">In Progress</option>
+              <option value="Completed">Completed</option>
+            </select>
+          </div>
+          <div class="mb-3">
+            <label for="taskAssignee" class="form-label">Assignee</label>
+            <input type="text" class="form-control" id="taskAssignee" required />
+          </div>
+          <div class="mb-3">
+            <label for="taskDueDate" class="form-label">Due Date</label>
+            <input type="date" class="form-control" id="taskDueDate" required />
+          </div>
+          <div class="mb-3">
+            <label for="taskPriority" class="form-label">Priority</label>
+            <select class="form-select" id="taskPriority" required>
+              <option value="Low">Low</option>
+              <option value="Medium">Medium</option>
+              <option value="High">High</option>
+            </select>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="submit" class="btn btn-success">Create Task</button>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Edit Task Modal -->
+  <div class="modal fade" id="editTaskModal" tabindex="-1" aria-labelledby="editTaskModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <form id="editTaskForm" class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Edit Task</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <input type="hidden" id="editTaskId">
+          <div class="mb-3">
+            <label for="editTaskTitle" class="form-label">Task Title</label>
+            <input type="text" class="form-control" id="editTaskTitle" required />
+          </div>
+          <div class="mb-3">
+            <label for="editTaskProject" class="form-label">Project</label>
+            <input type="text" class="form-control" id="editTaskProject" required />
+          </div>
+          <div class="mb-3">
+            <label for="editTaskStatus" class="form-label">Status</label>
+            <select class="form-select" id="editTaskStatus" required>
+              <option value="To Do">To Do</option>
+              <option value="In Progress">In Progress</option>
+              <option value="Completed">Completed</option>
+            </select>
+          </div>
+          <div class="mb-3">
+            <label for="editTaskAssignee" class="form-label">Assignee</label>
+            <input type="text" class="form-control" id="editTaskAssignee" required />
+          </div>
+          <div class="mb-3">
+            <label for="editTaskDueDate" class="form-label">Due Date</label>
+            <input type="date" class="form-control" id="editTaskDueDate" required />
+          </div>
+          <div class="mb-3">
+            <label for="editTaskPriority" class="form-label">Priority</label>
+            <select class="form-select" id="editTaskPriority" required>
+              <option value="Low">Low</option>
+              <option value="Medium">Medium</option>
+              <option value="High">High</option>
+            </select>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="submit" class="btn btn-success">Save Changes</button>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    const taskList = document.getElementById('taskList');
+    const createTaskForm = document.getElementById('createTaskForm');
+    const editTaskForm = document.getElementById('editTaskForm');
+  
+    // Toggle sidebar
+    document.getElementById('toggleSidebar').addEventListener('click', function() {
+      document.getElementById('sidebar').classList.toggle('hidden');
+      document.getElementById('mainContent').classList.toggle('full');
+    });
+  
+    // Fetch all tasks
+    async function fetchTasks() {
+      try {
+        const res = await fetch('http://localhost:3000/tasks');
+        if (!res.ok) throw new Error('Failed to fetch tasks');
+        const tasks = await res.json();
+        renderTasks(tasks);
+      } catch (error) {
+        console.error('Error fetching tasks:', error);
+        alert('Error loading tasks');
+      }
+    }
+  
+    // Render tasks in table with enhanced UI
+    function renderTasks(tasks) {
+      taskList.innerHTML = '';
+      tasks.forEach(task => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+  <td>${task.title}</td>
+  <td>${task.project}</td>
+  <td><span class="status-badge status-${task.status.replace(' ', '').toLowerCase()}">${task.status}</span></td>
+  <td>${task.assignee}</td>
+  <td>${new Date(task.dueDate).toLocaleDateString()}</td>
+  <td><span class="priority-badge priority-${task.priority.toLowerCase()}">${task.priority}</span></td>
+  <td class="action-buttons">
+    <button class="btn btn-sm btn-primary me-2" onclick="openEditModal('${task._id}')">
+      <i class="fas fa-edit"></i> Edit
+    </button>
+    <button class="btn btn-sm btn-danger" onclick="deleteTask('${task._id}')">
+      <i class="fas fa-trash"></i> Delete
+    </button>
+  </td>
+`;
+
+        taskList.appendChild(row);
+      });
+    }
+
+    // Open edit modal with task data
+async function openEditModal(taskId) {
+  try {
+    const response = await fetch(`http://localhost:3000/tasks/${taskId}`);
+    
+    if (!response.ok) {
+      throw new Error('Failed to fetch task');
+    }
+
+    const result = await response.json();
+    
+    // Validate response structure
+    if (!result.success || !result.data) {
+      throw new Error('Invalid server response');
+    }
+
+    const task = result.data;
+    
+    // Validate required fields
+    const requiredFields = ['_id', 'title', 'project', 'status', 'assignee', 'dueDate', 'priority'];
+    const missingFields = requiredFields.filter(field => !task[field]);
+    
+    if (missingFields.length > 0) {
+      throw new Error(`Missing required fields: ${missingFields.join(', ')}`);
+    }
+
+    // Populate form with fallback values
+    document.getElementById('editTaskId').value = task._id;
+    document.getElementById('editTaskTitle').value = task.title;
+    document.getElementById('editTaskProject').value = task.project;
+    document.getElementById('editTaskStatus').value = task.status;
+    document.getElementById('editTaskAssignee').value = task.assignee;
+    
+    // Format date properly (handle both ISO string and Date objects)
+    const dueDate = task.dueDate ? new Date(task.dueDate) : new Date();
+    document.getElementById('editTaskDueDate').value = dueDate.toISOString().split('T')[0];
+    
+    document.getElementById('editTaskPriority').value = task.priority;
+
+    // Show modal
+    const editModal = new bootstrap.Modal(document.getElementById('editTaskModal'));
+    editModal.show();
+    
+  } catch (error) {
+    console.error('Edit modal error:', error);
+    alert(`Error loading task: ${error.message}\nCheck console for details`);
+  }
+}
+// //Create new task
+    createTaskForm.addEventListener('submit', async function(e) {
+      e.preventDefault();
+      const task = {
+        title: document.getElementById('taskTitle').value,
+        project: document.getElementById('taskProject').value,
+        status: document.getElementById('taskStatus').value,
+        assignee: document.getElementById('taskAssignee').value,
+        dueDate: document.getElementById('taskDueDate').value,
+        priority: document.getElementById('taskPriority').value
+      };
+  
+      try {
+        const response = await fetch('http://localhost:3000/tasks', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(task)
+        });
+        
+        if (!response.ok) throw new Error('Failed to create task');
+        
+        createTaskForm.reset();
+        bootstrap.Modal.getInstance(document.getElementById('createTaskModal')).hide();
+        fetchTasks();
+      } catch (error) {
+        console.error('Error creating task:', error);
+        alert('Error creating task');
+      }
+    });
+
+//Bchain creation
+// Get form element once
+if (!createTaskForm) {
+  console.error('Create Task form not found');
+} else {
+  createTaskForm.addEventListener('submit', async function (e) {
+    e.preventDefault();
+
+    const contentInput = document.getElementById('taskTitle');
+    if (!contentInput) {
+      alert('Task title input not found');
+      return;
+    }
+
+    const content = contentInput.value.trim();
+    if (!content) {
+      alert('Please enter a task title');
+      return;
+    }
+
+    // Disable submit button to prevent multiple submits
+    const submitButton = createTaskForm.querySelector('button[type="submit"]');
+    if (submitButton) submitButton.disabled = true;
+
+    try {
+      const response = await fetch('http://localhost:3000/createTask', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ content }),
+      });
+
+      if (!response.ok) {
+        const text = await response.text();
+        throw new Error(`Network error: ${text}`);
+      }
+
+      const result = await response.json();
+
+      if (!result.success) throw new Error(result.error || 'Unknown error');
+
+      alert(`Task created on blockchain!\nTransaction Hash:\n${result.txHash}`);
+
+      createTaskForm.reset();
+
+      // Hide bootstrap modal if exists
+      const modalEl = document.getElementById('createTaskModal');
+      if (modalEl) {
+        const modalInstance = bootstrap.Modal.getInstance(modalEl);
+        if (modalInstance) modalInstance.hide();
+      }
+
+      // Fetch updated tasks if function exists
+      if (typeof fetchTasks === 'function') fetchTasks();
+    } catch (error) {
+      console.error('Error creating task:', error);
+      alert('Blockchain error: ' + error.message);
+    } finally {
+      if (submitButton) submitButton.disabled = false;
+    }
+  });
+}
+
+
+
+    // Handle edit form submission
+    editTaskForm.addEventListener('submit', async function(e) {
+      e.preventDefault();
+      
+      const taskId = document.getElementById('editTaskId').value;
+      const updatedTask = {
+        title: document.getElementById('editTaskTitle').value,
+        project: document.getElementById('editTaskProject').value,
+        status: document.getElementById('editTaskStatus').value,
+        assignee: document.getElementById('editTaskAssignee').value,
+        dueDate: document.getElementById('editTaskDueDate').value,
+        priority: document.getElementById('editTaskPriority').value
+      };
+
+      try {
+        const response = await fetch(`http://localhost:3000/tasks/${taskId}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(updatedTask)
+        });
+        
+        if (!response.ok) throw new Error('Failed to update task');
+        
+        const editModal = bootstrap.Modal.getInstance(document.getElementById('editTaskModal'));
+        editModal.hide();
+        fetchTasks();
+      } catch (error) {
+        console.error('Error updating task:', error);
+        alert('Error updating task');
+      }
+    });
+  
+    // Delete task
+    async function deleteTask(id) {
+      if (!confirm("Are you sure you want to delete this task?")) return;
+      try {
+        const response = await fetch(`http://localhost:3000/tasks/${id}`, {
+          method: "DELETE"
+        });
+        if (!response.ok) throw new Error('Failed to delete task');
+        alert("Task deleted successfully");
+        fetchTasks();
+      } catch (err) {
+        console.error("Error:", err);
+        alert("Error deleting task");
+      }
+    }
+  
+    // Initialize
+    document.addEventListener('DOMContentLoaded', function() {
+      fetchTasks();
+    });
+  </script>
+</body>
+</html>
