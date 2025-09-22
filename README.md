@@ -214,7 +214,7 @@ AI-Smart-Task-WEB3-MERN-App/
 This project was created for educational and training purposes. Contributions are welcome!
 
 ### Team Members
-- **Frontend Development**: Hamza (MyProVerse)
+- **Frontend Development**: Ali Zaman (MyProVerse)
 - **Backend Development**: Usman Mehmood and team members
 
 ### How to Contribute
